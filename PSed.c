@@ -23,8 +23,9 @@
 #FUSES NOBROWNOUT
 #FUSES NOLVP
 #FUSES NOMCLR
-#use delay(clock=4000000)
-#use rs232(baud=9600,parity=N,xmit=PIN_C6,rcv=PIN_C7,bits=8,UART1,ERRORS)  // Como dijisteis usaremos USART para comunicacion HC-05-PIC
+#use delay(clock=8000000)  // Mejor usamos 8Mhz 
+#use rs232(baud=9600,parity=N,xmit=PIN_C6,rcv=PIN_C7,bits=8)  // Como dijisteis usaremos USART para comunicacion HC-05-PIC
+#include "LCDeasy.c"
 
 
 
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // VARIABLES CONSTANTES //////////////////////////////////////////////////////
 
-#define pinServoTraccion x
+#define pinServoTraccion PIN_C3 //Asigno por ejemplo el PIN_C3 para la simulación en proteus
 
 
 
@@ -49,43 +50,56 @@ int8 periodo_timer2=255;            //Se corresponde con 18,4ms aproximadamente 
 // INTERRUPCIONES /////////////////////////////////////////////////////////////
 
 #INT_RDA
-RDA_isr(){  
+void RDA_isr(){  
 
-  int8 recibido;
-  recibido=getc();                 //Recibe 87, 83, 65 o 68 si usamos las teclas w,s,a,d.
-                                   //AquÃ­ pondriamos las instrucciones para nuestro coche.
+  char recibido; // Definimos tipo char. No tipo int8
+  if(kbhit()) recibido=getc();    //Si tenemos datos en el buffer kbhit nos da un true entonces asignamos a recibidos el tipo char del teclado             
 
-
-  switch (recibido){
-    /*Hacia delante y atrÃ¡s. Servo trucado*/
-    case "87":                    //Adelante. Considero w.
-    output_high(pinServoTraccion)
+      
+   if(recibido=='w'){                    //Adelante. Considero w.
+    output_high(pinServoTraccion);
     delay_ms(2);                  //2.5 son +90Âº, como lo hemos trucado va hacia la delante siempre.
     output_low(pinServoTraccion);
     delay_ms(20);
-    break;
-
-    case "83":                    //AtrÃ¡s. Considero s.
-    output_high(pinServoTraccion)
+   }
+    if(recibido=='s'){
+                       //AtrÃ¡s. Considero s.
+    output_high(pinServoTraccion);
     delay_ms(1);                  //0.5 son -90Âº, como lo hemos trucado va hacia la atrÃ¡s siempre.
     output_low(pinServoTraccion);
     delay_ms(20);
-    break;
+    }
 
 
-    /*Hacia izquierda y derecha. Servo NO trucado. Uso del unico CCP del 18F4580*/
-    case "65":                    //Izquierda. Considero a.
-    CCP_1_LOW=15;                 //Gira a la izquierda.
-    break;
-    case "68":                    //Derecha. Considero d.
-    CCP_1_LOW=32;                 //Gira a la derecha.
-    break;
-    default:
-    CCP_1_LOW=23.5;               //Por defecto en medio.
+    // Ahora hacia derecha e izquierda
+    if(recibido=='a'){ 
+     output_high(PIN_C5);
+    delay_ms(1);                  //Probé con la versión anterior con proteus y no va lo del ccp. Si alguno lo soluciona mejor
+    output_low(PIN_C5);
+    delay_ms(20);                     //Simplemente lo he hecho con delays y pulsos en alta o en baja.
+    //CCP_1_LOW=14; 
+   //Gira a la izquierda.
+    }
+    if(recibido=='d'){ 
+       output_high(PIN_C5);
+    delay_ms(2);                  //Igual que el anterior.
+    output_low(PIN_C5);
+    delay_ms(20);           //Derecha. Considero d.
+    //CCP_1_LOW=31;    
+    }//Gira a la derecha.
+    else{
+    output_low(PIN_C5);       //Aquí tendríamos que poner que si no se pulsa nada que el servo de giro vuelva a 0º
+    output_low(pinServoTraccion);
+    }
+       
+    //CCP_1_LOW=23.5;     
+    }//Por defecto en medio.
 
 
-  }
-}
+ 
+  
+  
+
 
 
 
@@ -99,16 +113,21 @@ void main(){
   setup_timer_2(T2_DIV_BY_16, periodo_timer2 ,4);     //Setup del CPP para el servo de la direccion. El NO trucado.
   setup_ccp1(CCP_PWM);
   setup_timer_0(RTCC_INTERNAL|RTCC_DIV_1);            //UsarÃ­amos el tmr0 para medir el ancho de pulso... Modulacion PWM para los servos
-  setup_uart(9600);                                   //Iniciamos comunicaciÃ³n UART HC-05 -> PIC
+                                //Iniciamos comunicaciÃ³n UART HC-05 -> PIC
+  enable_interrupts(INT_RDA);
+  enable_interrupts(GLOBAL);
+  setup_uart(9600);
+  // Cogi la libreria de lcdeasy simplemente para tener una especie de mensaje de entrada  (opcional)
+  lcd_init();                    
+   lcd_send_byte(0, 1); //Borra LCD
 
-
-  eneable_interrupt(INT_RDA);
-  eneable_interrupt(GLOBAL);
+   printf("Instrucciones del coche: \n\r -Pulsando 'w' va hacia delante 
+           \n\r -Pulsando 's' va para detras \n\r-Pulsando 'd' va hacia la derecha \n\r-Pulsando 'a' va hacia la izquierda \n\r Por favor, No lo coja si ha bebido\n\r");
 
   while(true){}
 }
       
-      
+      //Podeis probar el codigo con el modelo de proteus que subi a Dropbox y usarlo para comprar el codigo que modifiqueis
    
    // Para mandar datos del pc al modulo bluetooth podemos usar UART LINK 2.0
    // Os dejo enlace de pagina http://www.vallecompras.com/msln/pdf/Manual_HC_05.pdf
