@@ -33,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // VARIABLES CONSTANTES //////////////////////////////////////////////////////
 
-#define pinServoTraccion PIN_C3 //Asigno por ejemplo el PIN_C3 para la simulación en proteus
+#define pinServoTraccion PIN_C3 //Asigno por ejemplo el PIN_C3 para la simulaciï¿½n en proteus
 
 
 
@@ -73,22 +73,35 @@ void RDA_isr(){
 
     // Ahora hacia derecha e izquierda
     if(recibido=='a'){ 
+      for(i=0;i<=20;i++){
      output_high(PIN_C5);
-    delay_ms(1);                  //Probé con la versión anterior con proteus y no va lo del ccp. Si alguno lo soluciona mejor
+    delay_ms(1);                  //Probï¿½ con la versiï¿½n anterior con proteus y no va lo del ccp. Si alguno lo soluciona mejor
     output_low(PIN_C5);
-    delay_ms(20);                     //Simplemente lo he hecho con delays y pulsos en alta o en baja.
+    delay_ms(20);               //Simplemente lo he hecho con delays y pulsos en alta o en baja.
+    }
+    output_high(PIN_C5);
+    delay_us(1500);              //Vuelta a cero del servo de direccion
+    output_low(PIN_C5);         //El bucle for mantiene el giro un tiempo, dependiendo de las iteraciones  
+    delay_ms(20);  
+    
     //CCP_1_LOW=14; 
    //Gira a la izquierda.
     }
     if(recibido=='d'){ 
+    for(i=0;i<=20;i++){
        output_high(PIN_C5);
     delay_ms(2);                  //Igual que el anterior.
     output_low(PIN_C5);
     delay_ms(20);           //Derecha. Considero d.
+    }
+    output_high(PIN_C5);
+    delay_us(1500);             //Vuelta a cero del servo de direccion
+    output_low(PIN_C5);
+    delay_ms(20); 
     //CCP_1_LOW=31;    
     }//Gira a la derecha.
     else{
-    output_low(PIN_C5);       //Aquí tendríamos que poner que si no se pulsa nada que el servo de giro vuelva a 0º
+    output_low(PIN_C5);       //Aquï¿½ tendrï¿½amos que poner que si no se pulsa nada que el servo de giro vuelva a 0ï¿½
     output_low(pinServoTraccion);
     }
        
