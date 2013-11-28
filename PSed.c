@@ -52,6 +52,7 @@ int8 periodo_timer2=255;            //Se corresponde con 18,4ms aproximadamente 
 #INT_RDA
 void RDA_isr(){  
 
+  int i;
   char recibido; // Definimos tipo char. No tipo int8
   if(kbhit()) recibido=getc();    //Si tenemos datos en el buffer kbhit nos da un true entonces asignamos a recibidos el tipo char del teclado             
 
