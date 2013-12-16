@@ -1,0 +1,8 @@
+# Resultados de compilación
+*.cof
+*.err
+*.esym
+*.hex
+*.lst
+*.sta
+*.sym

@@ -1,149 +1,134 @@
-/**********************************************************************
-  Proyecto SED:4 Fantasticos   Special Guest:Vicente
-  
-  Comunicación Bluetooth Ordenador-automovil mediante PIC
-  
-  Miembros 4 Fantasticos:Borja,Benito,Mario,Pablo
-  
-  *********************************************************************/
-  
+/******************************************************************************/
+/**        Proyecto SED: 4 Fantásticos | Special Guest: Vicente              **/
+/**                                                                          **/
+/**       Comunicación Bluetooth Ordenador-Automóvil mediante PIC            **/
+/**                                                                          **/ 
+/**         Miembros 4 Fantásticos: Borja, Benito, Mario, Pablo              **/
+/**                        Copyright (C) 2013                                **/
+/******************************************************************************/
+#define VERSION 0.0.1
+#include <18f4520.h>
 
-//Primera toma de contacto con el proyecto. Proyecto_SED  Versión 0.0000
+/*----------------------------------------------------------------------------*/
+/*-             Configuración de módulos del microcontrolador                -*/
+/*----------------------------------------------------------------------------*/
+#use delay(clock=32MHz)  // CHECK: Mejor usamos 8Mhz 
+#use rs232(baud=9600, parity=N, xmit=PIN_C6, rcv=PIN_C7, bits=8) 
 
+/*----------------------------------------------------------------------------*/
+/*-                         Bits de configuración                            -*/
+/*----------------------------------------------------------------------------*/
+#FUSES NOWDT        // Perro guardían desactivado
+#FUSES INTRC        // Reloj interno del micro
+#FUSES PUT          // Delay de inicio para asegurar estabilidad
+#FUSES NOPROTECT    // Protección de código desactivada
+#FUSES NOBROWNOUT   // Reinicio por caída de voltaje desactivado
+#FUSES LVP          // ¡NO CAMBIAR! Habilita la programación en bajo voltaje
 
-//////////////////////////////////////////////////////////////////////////////
-// INCLUDEs FUSES USEs ///////////////////////////////////////////////////////
+/*----------------------------------------------------------------------------*/
+/*-                             Constantes                                   -*/
+/*----------------------------------------------------------------------------*/
+#define PIN_SERVO_TRACCION PIN_C3
+#define PERIODO_TIMER2     255      // Equivale a 18.4 ms (aprox.)
 
+#define LCD_COMANDO 0
+#define LCD_BORRAR  1
 
-#include <18f4520.h>  // No sé si usaremos este modelo u otro.
-#FUSES NOWDT
-#FUSES INTRC
-#FUSES PUT
-#FUSES NOPROTECT
-#FUSES NOBROWNOUT
-#FUSES NOLVP
-#FUSES NOMCLR
-#use delay(clock=8000000)  // Mejor usamos 8Mhz 
-#use rs232(baud=9600,parity=N,xmit=PIN_C6,rcv=PIN_C7,bits=8)  // Como dijisteis usaremos USART para comunicacion HC-05-PIC
-#include "LCDeasy.c"
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// VARIABLES CONSTANTES //////////////////////////////////////////////////////
-
-#define pinServoTraccion PIN_C3 //Asigno por ejemplo el PIN_C3 para la simulaci�n en proteus
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// VARIABLES RAM /////////////////////////////////////////////////////////////
-
-int8 periodo_timer2=255;            //Se corresponde con 18,4ms aproximadamente de periodo.
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// INTERRUPCIONES /////////////////////////////////////////////////////////////
-
+/*----------------------------------------------------------------------------*/
+/*-                             INTERRUPCIONES                               -*/
+/*----------------------------------------------------------------------------*/
+// CHECK: ¡¡Estamos usando delays dentro de una interrupción!!
 #INT_RDA
-void RDA_isr(){  
+void RDA_isr() {  
+  int i;          // Variable de iteración
+  char recibido;  // Caracter recibido por puerto serie (Bluetooth)
+  
+  // En caso de que haya dato un caracter en el buffer, lo leemos
+  if (kbhit()) 
+    recibido = getc();               
+  // CHECK: ¿En caso contrario se debe seguir ejecutando la función?
+  //        ¿Se podría dar el caso contrario?
 
-  int i;
-  char recibido; // Definimos tipo char. No tipo int8
-  if(kbhit()) recibido=getc();    //Si tenemos datos en el buffer kbhit nos da un true entonces asignamos a recibidos el tipo char del teclado             
-
-      
-   if(recibido=='w'){                    //Adelante. Considero w.
-    output_high(pinServoTraccion);
-    delay_ms(2);                  //2.5 son +90º, como lo hemos trucado va hacia la delante siempre.
-    output_low(pinServoTraccion);
-    delay_ms(20);
-   }
-    if(recibido=='s'){
-                       //Atrás. Considero s.
-    output_high(pinServoTraccion);
-    delay_ms(1);                  //0.5 son -90º, como lo hemos trucado va hacia la atrás siempre.
-    output_low(pinServoTraccion);
-    delay_ms(20);
-    }
-
-
-    // Ahora hacia derecha e izquierda
-    if(recibido=='a'){ 
-      for(i=0;i<=20;i++){
-     output_high(PIN_C5);
-    delay_ms(1);                  //Prob� con la versi�n anterior con proteus y no va lo del ccp. Si alguno lo soluciona mejor
-    output_low(PIN_C5);
-    delay_ms(20);               //Simplemente lo he hecho con delays y pulsos en alta o en baja.
-    }
-    output_high(PIN_C5);
-    delay_us(1500);              //Vuelta a cero del servo de direccion
-    output_low(PIN_C5);         //El bucle for mantiene el giro un tiempo, dependiendo de las iteraciones  
-    delay_ms(20);  
+  switch (recibido) {
+    // Dirección: Hacia delante
+    case 'w':
+      output_high(PIN_SERVO_TRACCION);
+      // Delay: 2.5 para +90º. Como está trucado va hacia la delante siempre.
+      delay_ms(2);  
+      output_low(PIN_SERVO_TRACCION);
+      delay_ms(20);
+      break;
     
-    //CCP_1_LOW=14; 
-   //Gira a la izquierda.
-    }
-    if(recibido=='d'){ 
-    for(i=0;i<=20;i++){
-       output_high(PIN_C5);
-    delay_ms(2);                  //Igual que el anterior.
-    output_low(PIN_C5);
-    delay_ms(20);           //Derecha. Considero d.
-    }
-    output_high(PIN_C5);
-    delay_us(1500);             //Vuelta a cero del servo de direccion
-    output_low(PIN_C5);
-    delay_ms(20); 
-    //CCP_1_LOW=31;    
-    }//Gira a la derecha.
-    else{
-    output_low(PIN_C5);       //Aqu� tendr�amos que poner que si no se pulsa nada que el servo de giro vuelva a 0�
-    output_low(pinServoTraccion);
-    }
-       
-    //CCP_1_LOW=23.5;     
-    }//Por defecto en medio.
+    // Dirección: Hacia atrás
+    case 's':
+      output_high(PIN_SERVO_TRACCION);
+      // Delay: 0.5 para -90º. Como está trucado va hacia la atrás siempre.
+      delay_ms(1);
+      output_low(PIN_SERVO_TRACCION);
+      delay_ms(20);
+    break;
 
+    // Dirección: Izquierda
+    case 'a': 
+      // Mantenemos el giro durante cierto tiempo.
+      for (i = 0; i <= 20; i++) {
+        output_high(PIN_C5);
+        delay_ms(1);
+        output_low(PIN_C5);
+        delay_ms(20);
+      }
+      
+      // Vuelta a cero del servo de dirección
+      output_high(PIN_C5);
+      delay_us(1500);  
+      output_low(PIN_C5);
+      delay_ms(20);
+    break;
+    
+    // Dirección: Derecha
+    case 'd':
+      // Mantenemos el giro durante cierto tiempo.
+      for (i = 0; i <= 20; i++) {
+        output_high(PIN_C5);
+        delay_ms(2);
+        output_low(PIN_C5);
+        delay_ms(20);
+      }
+      
+      // Vuelta a cero del servo de dirección
+      output_high(PIN_C5);
+      delay_us(1500);       
+      output_low(PIN_C5);
+      delay_ms(20);  
+    break;
+    
+    // Si no se pulsa nada... Poner el servo de giro a 0º.
+    default:
+      output_low(PIN_C5);       
+      output_low(PIN_SERVO_TRACCION);
+      break;
+  } 
+}
 
- 
-  
-  
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Programa Principal /////////////////////////////////////////////////////////
-
-void main(){
+/*----------------------------------------------------------------------------*/
+/*-                          Programa Principal                              -*/
+/*----------------------------------------------------------------------------*/
+void main() {
   disable_interrupts(GLOBAL);
 
-  setup_timer_2(T2_DIV_BY_16, periodo_timer2 ,4);     //Setup del CPP para el servo de la direccion. El NO trucado.
+  // Configuración del CPP para el servo de la direccion. El no trucado.
+  setup_timer_2(T2_DIV_BY_16, PERIODO_TIMER2, 4);
   setup_ccp1(CCP_PWM);
-  setup_timer_0(RTCC_INTERNAL|RTCC_DIV_1);            //Usaríamos el tmr0 para medir el ancho de pulso... Modulacion PWM para los servos
-                                //Iniciamos comunicación UART HC-05 -> PIC
+
+  // Modulacion PWM para los servos.
+  // Usaríamos el timer 0 para medir el ancho de pulso.
+  setup_timer_0(RTCC_INTERNAL | RTCC_DIV_1);
+   
+  //Iniciamos comunicación UART HC-05 -> PIC
   enable_interrupts(INT_RDA);
   enable_interrupts(GLOBAL);
   setup_uart(9600);
-  // Cogi la libreria de lcdeasy simplemente para tener una especie de mensaje de entrada  (opcional)
-  lcd_init();                    
-   lcd_send_byte(0, 1); //Borra LCD
 
-   printf("Instrucciones del coche: \n\r -Pulsando 'w' va hacia delante 
-           \n\r -Pulsando 's' va para detras \n\r-Pulsando 'd' va hacia la derecha \n\r-Pulsando 'a' va hacia la izquierda \n\r Por favor, No lo coja si ha bebido\n\r");
-
-  while(true){}
+  // Bucle principal del programa (funcionamiento por interrupción).
+  while(true) ;
 }
-      
-      //Podeis probar el codigo con el modelo de proteus que subi a Dropbox y usarlo para comprar el codigo que modifiqueis
-   
-   // Para mandar datos del pc al modulo bluetooth podemos usar UART LINK 2.0
-   // Os dejo enlace de pagina http://www.vallecompras.com/msln/pdf/Manual_HC_05.pdf
-   // También faltaría toda la parte de control de servos y bibliotecas adicionales
-   // Es solo una primera plantilla para trabajar sobre ella
