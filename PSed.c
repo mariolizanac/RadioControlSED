@@ -13,7 +13,7 @@
 /*-             Configuración de módulos del microcontrolador                -*/
 /*----------------------------------------------------------------------------*/
 #use delay(clock=32MHz)  // CHECK: Mejor usamos 8Mhz 
-#use rs232(baud=9600, parity=N, xmit=PIN_C6, rcv=PIN_C7, bits=8) 
+#use rs232(baud=9600, uart1) 
 
 /*----------------------------------------------------------------------------*/
 /*-                         Bits de configuración                            -*/
@@ -28,93 +28,37 @@
 /*----------------------------------------------------------------------------*/
 /*-                             Constantes                                   -*/
 /*----------------------------------------------------------------------------*/
-#define PIN_SERVO_TRACCION PIN_C3
-#define PERIODO_TIMER2     255      // Equivale a 18.4 ms (aprox.)
+#define PIN_SERVO_TRACCION  PIN_B0
+#define PIN_SERVO_DIRECCION PIN_B1
+#define PIN_ENCENDIDO       PIN_A1
+#define PERIODO_TIMER2      255      // Equivale a 18.4 ms (aprox.)
 
 #define LCD_COMANDO 0
 #define LCD_BORRAR  1
 
 /*----------------------------------------------------------------------------*/
+/*-                             Recibido                                     -*/
+/*----------------------------------------------------------------------------*/
+char Recibido = 'p';
+
+/*----------------------------------------------------------------------------*/
 /*-                             INTERRUPCIONES                               -*/
 /*----------------------------------------------------------------------------*/
-// CHECK: ¡¡Estamos usando delays dentro de una interrupción!!
 #INT_RDA
 void RDA_isr() {  
-  int i;          // Variable de iteración
-  char recibido;  // Caracter recibido por puerto serie (Bluetooth)
-  
-  // En caso de que haya dato un caracter en el buffer, lo leemos
-  if (kbhit()) 
-    recibido = getc();               
-  // CHECK: ¿En caso contrario se debe seguir ejecutando la función?
-  //        ¿Se podría dar el caso contrario?
-
-  switch (recibido) {
-    // Dirección: Hacia delante
-    case 'w':
-      output_high(PIN_SERVO_TRACCION);
-      // Delay: 2.5 para +90º. Como está trucado va hacia la delante siempre.
-      delay_ms(2);  
-      output_low(PIN_SERVO_TRACCION);
-      delay_ms(20);
-      break;
-    
-    // Dirección: Hacia atrás
-    case 's':
-      output_high(PIN_SERVO_TRACCION);
-      // Delay: 0.5 para -90º. Como está trucado va hacia la atrás siempre.
-      delay_ms(1);
-      output_low(PIN_SERVO_TRACCION);
-      delay_ms(20);
-    break;
-
-    // Dirección: Izquierda
-    case 'a': 
-      // Mantenemos el giro durante cierto tiempo.
-      for (i = 0; i <= 20; i++) {
-        output_high(PIN_C5);
-        delay_ms(1);
-        output_low(PIN_C5);
-        delay_ms(20);
-      }
-      
-      // Vuelta a cero del servo de dirección
-      output_high(PIN_C5);
-      delay_us(1500);  
-      output_low(PIN_C5);
-      delay_ms(20);
-    break;
-    
-    // Dirección: Derecha
-    case 'd':
-      // Mantenemos el giro durante cierto tiempo.
-      for (i = 0; i <= 20; i++) {
-        output_high(PIN_C5);
-        delay_ms(2);
-        output_low(PIN_C5);
-        delay_ms(20);
-      }
-      
-      // Vuelta a cero del servo de dirección
-      output_high(PIN_C5);
-      delay_us(1500);       
-      output_low(PIN_C5);
-      delay_ms(20);  
-    break;
-    
-    // Si no se pulsa nada... Poner el servo de giro a 0º.
-    default:
-      output_low(PIN_C5);       
-      output_low(PIN_SERVO_TRACCION);
-      break;
-  } 
+  // Caracter recibido por puerto serie (Bluetooth) 
+  char tmp = getc();
+  if (tmp != '\r' && tmp != '\n')
+    Recibido = tmp;
 }
 
 /*----------------------------------------------------------------------------*/
 /*-                          Programa Principal                              -*/
 /*----------------------------------------------------------------------------*/
 void main() {
-  disable_interrupts(GLOBAL);
+  byte i;
+  
+  //disable_interrupts(GLOBAL);
 
   // Configuración del CPP para el servo de la direccion. El no trucado.
   setup_timer_2(T2_DIV_BY_16, PERIODO_TIMER2, 4);
@@ -129,6 +73,76 @@ void main() {
   enable_interrupts(GLOBAL);
   setup_uart(9600);
 
+  // Enciende led de encendido
+  output_high(PIN_ENCENDIDO);
+
   // Bucle principal del programa (funcionamiento por interrupción).
-  while(true) ;
+  while(true) {
+    switch (Recibido) {
+      // Parada
+      case 'p':
+        output_low(PIN_SERVO_TRACCION);
+        output_low(PIN_SERVO_DIRECCION);
+        break;
+    
+      // Dirección: Hacia delante
+      case 'w':
+        output_high(PIN_SERVO_TRACCION);
+        // Delay: 2.5 para +90º. Como está trucado va hacia la delante siempre.
+        delay_ms(1000);  
+        output_low(PIN_SERVO_TRACCION);
+        delay_ms(2000);
+        break;
+      
+      // Dirección: Hacia atrás
+      case 's':
+        output_high(PIN_SERVO_TRACCION);
+        // Delay: 0.5 para -90º. Como está trucado va hacia la atrás siempre.
+        delay_ms(1000);
+        output_low(PIN_SERVO_TRACCION);
+        delay_ms(2000);
+        break;
+
+      // Dirección: Izquierda
+      case 'a': 
+        // Mantenemos el giro durante cierto tiempo.
+        for (i = 0; i <= 20; i++) {
+          output_high(PIN_SERVO_DIRECCION);
+          delay_ms(1000);
+          output_low(PIN_SERVO_DIRECCION);
+          delay_ms(2000);
+        }
+        
+        // Vuelta a cero del servo de dirección
+        output_high(PIN_SERVO_DIRECCION);
+        delay_us(1500);  
+        output_low(PIN_SERVO_DIRECCION);
+        delay_ms(2000);
+        break;
+      
+      // Dirección: Derecha
+      case 'd':
+        // Mantenemos el giro durante cierto tiempo.
+        for (i = 0; i <= 20; i++) {
+          output_high(PIN_SERVO_DIRECCION);
+          delay_ms(2000);
+          output_low(PIN_SERVO_DIRECCION);
+          delay_ms(20000);
+        }
+        
+        // Vuelta a cero del servo de dirección
+        output_high(PIN_SERVO_DIRECCION);
+        delay_us(1500);       
+        output_low(PIN_SERVO_DIRECCION);
+        delay_ms(2000);  
+        break;
+      
+      // Si no se pulsa nada... Poner el servo de giro a 0º.
+      default:
+        output_low(PIN_SERVO_DIRECCION);       
+        output_low(PIN_SERVO_TRACCION);
+        break;
+    } 
+  
+  }
 }
