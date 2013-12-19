@@ -12,7 +12,7 @@
 /*----------------------------------------------------------------------------*/
 /*-             Configuración de módulos del microcontrolador                -*/
 /*----------------------------------------------------------------------------*/
-#use delay(clock=32MHz)  // CHECK: Mejor usamos 8Mhz 
+#use delay(clock=1MHz)  // CHECK: Mejor usamos 8Mhz 
 #use rs232(baud=9600, uart1) 
 
 /*----------------------------------------------------------------------------*/
@@ -28,13 +28,8 @@
 /*----------------------------------------------------------------------------*/
 /*-                             Constantes                                   -*/
 /*----------------------------------------------------------------------------*/
-#define PIN_SERVO_TRACCION  PIN_B0
-#define PIN_SERVO_DIRECCION PIN_B1
-#define PIN_ENCENDIDO       PIN_A1
+#define PIN_LED_ENCENDIDO   PIN_A1
 #define PERIODO_TIMER2      255      // Equivale a 18.4 ms (aprox.)
-
-#define LCD_COMANDO 0
-#define LCD_BORRAR  1
 
 /*----------------------------------------------------------------------------*/
 /*-                             Recibido                                     -*/
@@ -56,9 +51,7 @@ void RDA_isr() {
 /*-                          Programa Principal                              -*/
 /*----------------------------------------------------------------------------*/
 void main() {
-  byte i;
-  
-  //disable_interrupts(GLOBAL);
+  setup_oscillator(OSC_1MHz);
 
   // Configuración del CPP para el servo de la direccion. El no trucado.
   setup_timer_2(T2_DIV_BY_16, PERIODO_TIMER2, 4);
@@ -74,75 +67,41 @@ void main() {
   setup_uart(9600);
 
   // Enciende led de encendido
-  output_high(PIN_ENCENDIDO);
+  output_high(PIN_LED_ENCENDIDO);
 
   // Bucle principal del programa (funcionamiento por interrupción).
   while(true) {
     switch (Recibido) {
-      // Parada
-      case 'p':
-        output_low(PIN_SERVO_TRACCION);
-        output_low(PIN_SERVO_DIRECCION);
-        break;
-    
       // Dirección: Hacia delante
       case 'w':
-        output_high(PIN_SERVO_TRACCION);
-        // Delay: 2.5 para +90º. Como está trucado va hacia la delante siempre.
-        delay_ms(1000);  
-        output_low(PIN_SERVO_TRACCION);
-        delay_ms(2000);
+        CCP_1_LOW = 15;
+        // CCP_2_LOW = 32;
         break;
       
       // Dirección: Hacia atrás
       case 's':
-        output_high(PIN_SERVO_TRACCION);
-        // Delay: 0.5 para -90º. Como está trucado va hacia la atrás siempre.
-        delay_ms(1000);
-        output_low(PIN_SERVO_TRACCION);
-        delay_ms(2000);
+        CCP_1_LOW = 32;
+        // CCP_2_LOW = 15;
         break;
 
       // Dirección: Izquierda
       case 'a': 
-        // Mantenemos el giro durante cierto tiempo.
-        for (i = 0; i <= 20; i++) {
-          output_high(PIN_SERVO_DIRECCION);
-          delay_ms(1000);
-          output_low(PIN_SERVO_DIRECCION);
-          delay_ms(2000);
-        }
-        
-        // Vuelta a cero del servo de dirección
-        output_high(PIN_SERVO_DIRECCION);
-        delay_us(1500);  
-        output_low(PIN_SERVO_DIRECCION);
-        delay_ms(2000);
+        CCP_1_LOW = 23;
+        //CCP_2_LOW = 32;
         break;
       
       // Dirección: Derecha
       case 'd':
-        // Mantenemos el giro durante cierto tiempo.
-        for (i = 0; i <= 20; i++) {
-          output_high(PIN_SERVO_DIRECCION);
-          delay_ms(2000);
-          output_low(PIN_SERVO_DIRECCION);
-          delay_ms(20000);
-        }
-        
-        // Vuelta a cero del servo de dirección
-        output_high(PIN_SERVO_DIRECCION);
-        delay_us(1500);       
-        output_low(PIN_SERVO_DIRECCION);
-        delay_ms(2000);  
+        CCP_1_LOW = 32;
+        //CCP_2_LOW = 23;
         break;
       
       // Si no se pulsa nada... Poner el servo de giro a 0º.
+      case 'p':
       default:
-        output_low(PIN_SERVO_DIRECCION);       
-        output_low(PIN_SERVO_TRACCION);
+        CCP_1_LOW = 23;
+        // CCP_2_LOW = 23;
         break;
     } 
-  
   }
 }
