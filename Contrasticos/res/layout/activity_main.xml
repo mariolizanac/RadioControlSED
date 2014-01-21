@@ -1,0 +1,111 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+    <TextView
+        android:id="@+id/lblStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pulsa algo" />
+
+    <Button
+        android:id="@+id/btnClose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/btnConnect"
+        android:layout_alignBottom="@+id/btnConnect"
+        android:layout_marginLeft="24dp"
+        android:layout_toRightOf="@+id/btnConnect"
+        android:text="Desconectar" />
+	    
+    <Button
+        android:id="@+id/btnActivate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/lblStatus"
+        android:layout_below="@+id/lblStatus"
+        android:text="Encender Bluetooth" />
+
+    <Button
+        android:id="@+id/btnConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btnActivate"
+        android:layout_below="@+id/btnActivate"
+        android:text="Conectar" />
+
+    <Button
+        android:id="@+id/btnAbajo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnDerecha"
+        android:layout_toLeftOf="@+id/btnDerecha"
+        android:text="↓" />
+
+    <Button
+        android:id="@+id/btnDerecha"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnArriba"
+        android:layout_toRightOf="@+id/btnArriba"
+        android:text="→" />
+
+    <Button
+        android:id="@+id/btnIzquierda"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/btnConnect"
+        android:layout_below="@+id/btnArriba"
+        android:text="←" />
+
+    <Button
+        android:id="@+id/btnArriba"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnClose"
+        android:layout_marginTop="138dp"
+        android:layout_toRightOf="@+id/btnIzquierda"
+        android:text="↑" />
+
+    <RadioGroup
+        android:id="@+id/radioModos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnClose"
+        android:layout_marginTop="18dp"
+        android:layout_toRightOf="@+id/btnArriba" >
+
+        <RadioButton
+            android:id="@+id/radioBtnControl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btnClose"
+            android:layout_marginTop="14dp"
+            android:layout_toRightOf="@+id/btnArriba"
+            android:checked="true"
+            android:text="Radiocontrol" />
+
+        <RadioButton
+            android:id="@+id/radioBtnLuz"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/radioBtnControl"
+            android:layout_toRightOf="@+id/btnArriba"
+            android:text="Sigue luz" />
+
+        <RadioButton
+            android:id="@+id/radioBtnLinea"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/radioBtnLuz"
+            android:layout_below="@+id/radioBtnLuz"
+            android:text="Sigue línea" />
+    </RadioGroup>
+
+</RelativeLayout>
