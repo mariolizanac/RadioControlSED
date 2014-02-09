@@ -9,7 +9,9 @@ import android.util.Log;
 public class BluetoothTransmitter {
 
 	// Constantes
-	private final String MAC_ADDRESS = "20:13:11:07:10:20";
+	private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+	private final String MAC_ADDRESS = "20:13:12:04:06:30";
+	// private final String MAC_ADDRESS = "20:13:11:07:10:20";
 	private final String TAG = "Contrastico";
 	
 	private BluetoothAdapter blueblue;
@@ -44,12 +46,17 @@ public class BluetoothTransmitter {
 	}
 	
 	public boolean connectDevice() {
-		this.device = this.blueblue.getRemoteDevice(MAC_ADDRESS);
-		UUID uuid = this.device.getUuids()[0].getUuid();
+		try {
+			this.device = this.blueblue.getRemoteDevice(MAC_ADDRESS);
+			//uuid = this.device.getUuids()[0].getUuid();
+		} catch (Exception e) {
+			Log.d(TAG, e.getMessage());
+			return false;
+		}
 
 		try {
 			Log.d(TAG, "Buscando dispositivo");
-			this.socket = this.device.createRfcommSocketToServiceRecord(uuid);
+			this.socket = this.device.createRfcommSocketToServiceRecord(MY_UUID);
 		} catch (Exception e) {
 			Log.d(TAG, e.getMessage());
 			return false;

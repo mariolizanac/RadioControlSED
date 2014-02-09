@@ -77,35 +77,28 @@
         android:id="@+id/radioModos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/btnClose"
-        android:layout_marginTop="18dp"
-        android:layout_toRightOf="@+id/btnArriba" >
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnClose" >
 
         <RadioButton
             android:id="@+id/radioBtnControl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/btnClose"
             android:layout_marginTop="14dp"
-            android:layout_toRightOf="@+id/btnArriba"
             android:checked="true"
             android:text="Radiocontrol" />
-
-        <RadioButton
-            android:id="@+id/radioBtnLuz"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/radioBtnControl"
-            android:layout_toRightOf="@+id/btnArriba"
-            android:text="Sigue luz" />
 
         <RadioButton
             android:id="@+id/radioBtnLinea"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/radioBtnLuz"
-            android:layout_below="@+id/radioBtnLuz"
             android:text="Sigue línea" />
+
+        <RadioButton
+            android:id="@+id/radioBtnAccel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Acelerómetro" />
     </RadioGroup>
 
 </RelativeLayout>
