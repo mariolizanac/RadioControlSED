@@ -1,0 +1,18 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+# SharpDevelop 4.4
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contrasticos", "Contrasticos\Contrasticos.csproj", "{DEAD47FF-5CC2-4BD1-9F66-3ECCDB037CEC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DEAD47FF-5CC2-4BD1-9F66-3ECCDB037CEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEAD47FF-5CC2-4BD1-9F66-3ECCDB037CEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEAD47FF-5CC2-4BD1-9F66-3ECCDB037CEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEAD47FF-5CC2-4BD1-9F66-3ECCDB037CEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+EndGlobal

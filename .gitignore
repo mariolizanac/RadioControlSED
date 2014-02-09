@@ -7,6 +7,11 @@
 *.sta
 *.sym
 
+# Contrasticos PC
+ContrasticosPC/Contrasticos/obj/
+ContrasticosPC/Contrasticos/bin/
+
+
 # Programa para copiar código en PIC
 Arduimmer.exe
 
